@@ -1,253 +1,321 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabase'
-
-interface Task {
-  id: string
-  title: string
-  description: string
-  status: 'todo' | 'doing' | 'done'
-  priority: 'low' | 'medium' | 'high'
-  created_at: string
-}
-
-interface Subtask {
-  id: string
-  task_id: string
-  title: string
-  status: 'pending' | 'completed'
-}
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core'
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import { useKanbanStore, Task } from '@/lib/store'
+import { TaskCard } from '@/components/TaskCard'
 
 export default function Kanban() {
-  const [tasks, setTasks] = useState<Task[]>([])
-  const [loading, setLoading] = useState(true)
+  const {
+    tasks,
+    loading,
+    selectedTask,
+    subtasks,
+    isEditing,
+    editTask,
+    fetchTasks,
+    addTask,
+    updateTask,
+    deleteTask,
+    updateTaskStatus,
+    reorderTasks,
+    fetchSubtasks,
+    addSubtask,
+    toggleSubtask,
+    setSelectedTask,
+    setIsEditing,
+    setEditTask,
+  } = useKanbanStore()
+
   const [newTaskTitle, setNewTaskTitle] = useState('')
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null)
-  const [subtasks, setSubtasks] = useState<Subtask[]>([])
   const [newSubtaskTitle, setNewSubtaskTitle] = useState('')
+  const [newTaskPriority, setNewTaskPriority] = useState<Task['priority']>('medium')
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
 
   useEffect(() => {
     fetchTasks()
   }, [])
 
-  const fetchTasks = async () => {
-    const { data, error } = await supabase
-      .from('tasks')
-      .select('*')
-      .order('created_at', { ascending: false })
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
 
-    if (!error && data) {
-      setTasks(data)
+    if (over && active.id !== over.id) {
+      const oldIndex = tasks.findIndex(t => t.id === active.id)
+      const newIndex = tasks.findIndex(t => t.id === over.id)
+      const newTasks = arrayMove(tasks, oldIndex, newIndex)
+      
+      // 更新 order
+      newTasks.forEach((task, index) => {
+        task.order = index
+      })
+      
+      reorderTasks(newTasks)
+      
+      // 持久化到數據庫
+      newTasks.forEach(async (task) => {
+        await useKanbanStore.getState().updateTask(task.id, { order: task.order })
+      })
     }
-    setLoading(false)
   }
 
-  const addTask = async () => {
+  const handleAddTask = async () => {
     if (!newTaskTitle.trim()) return
-
-    const { data, error } = await supabase
-      .from('tasks')
-      .insert({ title: newTaskTitle, status: 'todo', priority: 'medium' })
-      .select()
-      .single()
-
-    if (!error && data) {
-      setTasks([data, ...tasks])
-      setNewTaskTitle('')
-    }
+    await addTask(newTaskTitle, newTaskPriority)
+    setNewTaskTitle('')
+    setNewTaskPriority('medium')
   }
 
-  const updateTaskStatus = async (taskId: string, status: Task['status']) => {
-    const { error } = await supabase
-      .from('tasks')
-      .update({ status })
-      .eq('id', taskId)
-
-    if (!error) {
-      setTasks(tasks.map(t => t.id === taskId ? { ...t, status } : t))
-    }
-  }
-
-  const deleteTask = async (taskId: string) => {
-    const { error } = await supabase
-      .from('tasks')
-      .delete()
-      .eq('id', taskId)
-
-    if (!error) {
-      setTasks(tasks.filter(t => t.id !== taskId))
-    }
-  }
-
-  const fetchSubtasks = async (taskId: string) => {
-    const { data } = await supabase
-      .from('subtasks')
-      .select('*')
-      .eq('task_id', taskId)
-      .order('created_at', { ascending: true })
-
-    if (data) setSubtasks(data)
-  }
-
-  const addSubtask = async () => {
+  const handleAddSubtask = async () => {
     if (!selectedTask || !newSubtaskTitle.trim()) return
-
-    const { data, error } = await supabase
-      .from('subtasks')
-      .insert({ task_id: selectedTask.id, title: newSubtaskTitle })
-      .select()
-      .single()
-
-    if (!error && data) {
-      setSubtasks([...subtasks, data])
-      setNewSubtaskTitle('')
-    }
+    await addSubtask(selectedTask.id, newSubtaskTitle)
+    setNewSubtaskTitle('')
   }
 
-  const toggleSubtask = async (subtaskId: string, status: Subtask['status']) => {
-    const newStatus = status === 'pending' ? 'completed' : 'pending'
-    await supabase
-      .from('subtasks')
-      .update({ status: newStatus })
-      .eq('id', subtaskId)
-
-    setSubtasks(subtasks.map(s => s.id === subtaskId ? { ...s, status: newStatus } : s))
+  const handleStartEdit = (task: Task) => {
+    setEditTask({ ...task })
+    setIsEditing(true)
   }
 
-  const columns: { status: Task['status']; label: string; color: string }[] = [
-    { status: 'todo', label: '📋 待處理', color: 'bg-orange-100' },
-    { status: 'doing', label: '🔄 執行中', color: 'bg-blue-100' },
-    { status: 'done', label: '✅ 完成', color: 'bg-green-100' },
+  const handleSaveEdit = async () => {
+    if (!editTask) return
+    await updateTask(editTask.id, {
+      title: editTask.title,
+      description: editTask.description,
+      priority: editTask.priority,
+    })
+  }
+
+  const columns: { status: Task['status']; label: string }[] = [
+    { status: 'todo', label: '待處理' },
+    { status: 'doing', label: '執行中' },
+    { status: 'done', label: '已完成' },
   ]
 
+  const getTasksByStatus = (status: Task['status']) => {
+    return tasks.filter(t => t.status === status).sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+  }
+
   if (loading) {
-    return <div className="flex justify-center items-center min-h-screen">載入中...</div>
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="loading-spinner"></div>
+      </div>
+    )
   }
 
   return (
     <div className="kanban-wrapper">
       {/* Header */}
       <div className="app-header">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <h1>✨ 微創任務看板</h1>
-          <a href="/dashboard" className="px-4 py-2 bg-white/20 text-white rounded-lg hover:bg-white/30 transition">
-            📊 儀表板
+        <div className="header-content">
+          <h1>任務看板</h1>
+          <a href="/dashboard" className="header-btn">
+            儀表板
           </a>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto p-6">
+      <div className="kanban-container">
         {/* 新增任務 */}
-        <div className="task-input-area mb-6">
+        <div className="task-input-area">
           <input
             type="text"
             value={newTaskTitle}
             onChange={(e) => setNewTaskTitle(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && addTask()}
-            placeholder="➕ 新增任務..."
+            onKeyDown={(e) => e.key === 'Enter' && handleAddTask()}
+            placeholder="新增任務..."
             className="input-field"
           />
-          <button onClick={addTask} className="btn-primary">
-            新增任務
+          <select
+            value={newTaskPriority}
+            onChange={(e) => setNewTaskPriority(e.target.value as Task['priority'])}
+            className="priority-select"
+          >
+            <option value="low">低優先權</option>
+            <option value="medium">一般</option>
+            <option value="high">緊急</option>
+          </select>
+          <button onClick={handleAddTask} className="btn-primary">
+            新增
           </button>
         </div>
 
         {/* 看板 columns */}
-        <div className="kanban-board">
-          {columns.map(col => (
-            <div key={col.status} className={`kanban-column column-${col.status}`}>
-              <div className="kanban-column-header">
-                <span>{col.label}</span>
-                <span className="task-count">{tasks.filter(t => t.status === col.status).length}</span>
-              </div>
-              <div className="task-list">
-                {tasks.filter(t => t.status === col.status).map(task => (
-                  <div
-                    key={task.id}
-                    className="task-card"
-                    onClick={() => {
-                      setSelectedTask(task)
-                      fetchSubtasks(task.id)
-                    }}
-                  >
-                    <div className="task-title">{task.title}</div>
-                    <div className="task-meta">
-                      <span className={`priority-badge priority-${task.priority}`}>
-                        {task.priority === 'high' ? '🔴 緊急' : task.priority === 'medium' ? '🟡 一般' : '🟢 低'}
-                      </span>
-                    </div>
-                    <div className="task-actions">
-                      <select
-                        value={task.status}
-                        onChange={(e) => updateTaskStatus(task.id, e.target.value as Task['status'])}
-                        onClick={(e) => e.stopPropagation()}
-                        className="status-select"
-                      >
-                        <option value="todo">待處理</option>
-                        <option value="doing">執行中</option>
-                        <option value="done">完成</option>
-                      </select>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          deleteTask(task.id)
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <div className="kanban-board">
+            {columns.map(col => (
+              <div key={col.status} className={`kanban-column column-${col.status}`}>
+                <div className="kanban-column-header">
+                  <span>{col.label}</span>
+                  <span className="task-count">{getTasksByStatus(col.status).length}</span>
+                </div>
+                <SortableContext
+                  items={getTasksByStatus(col.status).map(t => t.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="task-list">
+                    {getTasksByStatus(col.status).map(task => (
+                      <TaskCard
+                        key={task.id}
+                        task={task}
+                        onClick={() => {
+                          setSelectedTask(task)
+                          fetchSubtasks(task.id)
                         }}
-                        className="delete-btn"
+                        onStatusChange={(status) => updateTaskStatus(task.id, status)}
+                        onDelete={() => deleteTask(task.id)}
+                      />
+                    ))}
+                    {getTasksByStatus(col.status).length === 0 && (
+                      <div className="empty-state">
+                        <span className="empty-icon">−</span>
+                        <p>尚無任務</p>
+                      </div>
+                    )}
+                  </div>
+                </SortableContext>
+              </div>
+            ))}
+          </div>
+        </DndContext>
+
+        {/* 子任務/編輯面板 */}
+        {(selectedTask || isEditing) && (
+          <div className="modal-overlay" onClick={() => { setSelectedTask(null); setIsEditing(false); setEditTask(null) }}>
+            <div className="modal-content" onClick={e => e.stopPropagation()}>
+              {/* 編輯模式 */}
+              {isEditing && editTask && (
+                <>
+                  <div className="modal-header">
+                    <h2>編輯任務</h2>
+                    <button onClick={() => setIsEditing(false)} className="close-btn">✕</button>
+                  </div>
+                  <div className="edit-form">
+                    <label className="form-label">
+                      任務標題
+                      <input
+                        type="text"
+                        value={editTask.title}
+                        onChange={(e) => setEditTask({ ...editTask, title: e.target.value })}
+                        className="input-field"
+                      />
+                    </label>
+                    <label className="form-label">
+                      描述
+                      <textarea
+                        value={editTask.description || ''}
+                        onChange={(e) => setEditTask({ ...editTask, description: e.target.value })}
+                        className="input-field textarea"
+                        rows={3}
+                        placeholder="新增描述..."
+                      />
+                    </label>
+                    <label className="form-label">
+                      優先權
+                      <select
+                        value={editTask.priority}
+                        onChange={(e) => setEditTask({ ...editTask, priority: e.target.value as Task['priority'] })}
+                        className="input-field"
                       >
-                        🗑️
+                        <option value="low">低優先權</option>
+                        <option value="medium">一般</option>
+                        <option value="high">緊急</option>
+                      </select>
+                    </label>
+                    <div className="edit-actions">
+                      <button onClick={() => setIsEditing(false)} className="btn-cancel">
+                        取消
+                      </button>
+                      <button onClick={handleSaveEdit} className="btn-primary">
+                        儲存
                       </button>
                     </div>
                   </div>
-                ))}
-                {tasks.filter(t => t.status === col.status).length === 0 && (
-                  <div className="empty-state">尚無任務</div>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
+                </>
+              )}
 
-        {/* 子任務面板 */}
-        {selectedTask && (
-          <div className="modal-overlay">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h2>✨ 子任務 - {selectedTask.title}</h2>
-                <button onClick={() => setSelectedTask(null)} className="close-btn">
-                  ✕
-                </button>
-              </div>
-
-              {/* 子任務列表 */}
-              <div className="subtask-list">
-                {subtasks.map(subtask => (
-                  <div key={subtask.id} className={`subtask-item ${subtask.status === 'completed' ? 'completed' : ''}`}>
-                    <input
-                      type="checkbox"
-                      checked={subtask.status === 'completed'}
-                      onChange={() => toggleSubtask(subtask.id, subtask.status)}
-                    />
-                    <span>{subtask.title}</span>
+              {/* 查看子任務模式 */}
+              {!isEditing && selectedTask && (
+                <>
+                  <div className="modal-header">
+                    <div className="modal-title-row">
+                      <h2>{selectedTask.title}</h2>
+                      <button 
+                        onClick={() => handleStartEdit(selectedTask)} 
+                        className="edit-btn"
+                        title="編輯任務"
+                      >
+                        編輯
+                      </button>
+                    </div>
+                    <button onClick={() => setSelectedTask(null)} className="close-btn">✕</button>
                   </div>
-                ))}
-                {subtasks.length === 0 && <p className="empty-state">尚無子任務</p>}
-              </div>
 
-              {/* 新增子任務 */}
-              <div className="subtask-input-area">
-                <input
-                  type="text"
-                  value={newSubtaskTitle}
-                  onChange={(e) => setNewSubtaskTitle(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && addSubtask()}
-                  placeholder="新增子任務..."
-                  className="input-field"
-                />
-                <button onClick={addSubtask} className="btn-secondary">
-                  新增
-                </button>
-              </div>
+                  {selectedTask.description && (
+                    <div className="task-description">
+                      {selectedTask.description}
+                    </div>
+                  )}
+
+                  {/* 子任務列表 */}
+                  <div className="subtask-list">
+                    {subtasks.map(subtask => (
+                      <div key={subtask.id} className={`subtask-item ${subtask.status === 'completed' ? 'completed' : ''}`}>
+                        <input
+                          type="checkbox"
+                          checked={subtask.status === 'completed'}
+                          onChange={() => toggleSubtask(subtask.id, subtask.status)}
+                        />
+                        <span>{subtask.title}</span>
+                      </div>
+                    ))}
+                    {subtasks.length === 0 && <p className="empty-state">尚無子任務</p>}
+                  </div>
+
+                  {/* 新增子任務 */}
+                  <div className="subtask-input-area">
+                    <input
+                      type="text"
+                      value={newSubtaskTitle}
+                      onChange={(e) => setNewSubtaskTitle(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleAddSubtask()}
+                      placeholder="新增子任務..."
+                      className="input-field"
+                    />
+                    <button onClick={handleAddSubtask} className="btn-secondary">
+                      新增
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         )}
