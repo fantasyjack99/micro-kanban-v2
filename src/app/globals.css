@@ -1,25 +1,68 @@
 @import "tailwindcss";
 
 :root {
-  /* MUJI 風格色調 - 柔和自然 */
-  --background: #f7f5f0;        /* 柔和米白色 */
-  --foreground: #5c5c5c;         /* 柔和深灰，降低對比度 */
-  --card-bg: #ffffff;           /* 純白卡片 */
-  --card-hover: #faf9f6;        /* 輕微溫暖的白 */
-  --primary: #8b8b8b;            /* MUJI 灰 */
-  --primary-hover: #6b6b6b;      /* 深灰 */
-  --success: #a8c5a8;            /* 柔和綠 */
-  --warning: #d4c5a8;            /* 柔和棕黃 */
-  --danger: #c5a8a8;            /* 柔和紅 */
-  --todo-bg: #e8e6e1;           /* 柔和灰米 */
-  --doing-bg: #e6e2db;          /* 柔和淺棕 */
-  --done-bg: #e1e4de;           /* 柔和淺綠灰 */
-  --border: #e5e3de;            /* 柔和邊框 */
-  --text-muted: #9a9a9a;        /* 柔和灰 */
+  /* ==================== 板栗看板 色彩系統 ==================== */
+  /* 低飽和度暖色調，栗子-inspired */
   
-  /* 陰影 */
-  --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.04);
-  --shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.08);
+  /* 背景色系 */
+  --background: #f9f6f2;              /* 暖米白 */
+  --background-warm: #f5f0eb;        /* 奶油白 */
+  --foreground: #5d4e42;              /* 深栗棕色 */
+  --text-muted: #9e8d80;             /* 淺栗灰 */
+  
+  /* 卡片 */
+  --card-bg: #ffffff;
+  --card-hover: #fffdf9;
+  --card-border: #e8e0d8;
+  
+  /* 主要色 */
+  --primary: #8b6f5c;                /* 栗子棕 */
+  --primary-light: #a8896e;          /* 淺栗 */
+  --primary-dark: #6b5244;           /* 深栗 */
+  --primary-soft: rgba(139, 111, 92, 0.08);  /* 極淡栗子 */
+  
+  /* 狀態色 */
+  --success: #8faf8b;                /* 抹茶綠 */
+  --success-soft: rgba(143, 175, 139, 0.12);
+  --warning: #d4b896;               /* 杏仁棕 */
+  --warning-soft: rgba(212, 184, 150, 0.12);
+  --danger: #c59a9a;                /* 玫瑰灰 */
+  --danger-soft: rgba(197, 154, 154, 0.12);
+  
+  /* 欄位漸層 */
+  --todo-gradient-start: #fdf9f5;
+  --todo-gradient-end: #f7f2ec;
+  --doing-gradient-start: #fdf8f4;
+  --doing-gradient-end: #f5ede4;
+  --done-gradient-start: #f5f9f4;
+  --done-gradient-end: #ecf2ec;
+  
+  /* 欄位標題 */
+  --column-todo-accent: #c4a882;
+  --column-doing-accent: #c49e82;
+  --column-done-accent: #8fb58f;
+  
+  /* 邊框 */
+  --border: #e8dfd6;
+  --border-hover: #d8cfc4;
+  
+  /* 陰影 - 多層次柔焦 */
+  --shadow-xs: 0 1px 3px rgba(93, 78, 66, 0.04);
+  --shadow-sm: 0 2px 6px rgba(93, 78, 66, 0.06);
+  --shadow-md: 0 4px 12px rgba(93, 78, 66, 0.08);
+  --shadow-lg: 0 8px 24px rgba(93, 78, 66, 0.10);
+  --shadow-hover: 0 8px 30px rgba(93, 78, 66, 0.14);
+  
+  /* 優先權 */
+  --priority-high-bg: #fdf2f2;
+  --priority-high-border: #e8c4c4;
+  --priority-high-text: #a07070;
+  --priority-medium-bg: #fdf8f0;
+  --priority-medium-border: #e8d8bc;
+  --priority-medium-text: #a09060;
+  --priority-low-bg: #f0f5fb;
+  --priority-low-border: #c4d0e4;
+  --priority-low-text: #7080a0;
 }
 
 @theme inline {
@@ -37,84 +80,118 @@ body {
   line-height: 1.6;
 }
 
-/* Loading Spinner */
+/* ==================== Loading ==================== */
 .loading-spinner {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border: 2px solid var(--border);
   border-top-color: var(--primary);
   border-radius: 50%;
-  animation: spin 1s linear infinite;
+  animation: spin 0.8s linear infinite;
 }
 
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
 
-/* 看板包裝 */
+/* ==================== 看板包裝 ==================== */
 .kanban-wrapper {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  position: relative;
+  background: var(--background);
 }
 
-/* Header 樣式 - MUJI 簡約風 */
+/* 頂部葉子裝飾 */
+.banli-top-graphic {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 180px;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.35;
+  background: linear-gradient(180deg, rgba(212, 165, 116, 0.06) 0%, transparent 100%);
+}
+
+/* ==================== Header ==================== */
 .app-header {
-  background: #ffffff;
+  background: var(--card-bg);
   color: var(--foreground);
-  padding: 1.25rem 1.5rem;
+  padding: 1.1rem 1.5rem;
   border-bottom: 1px solid var(--border);
-  box-shadow: none;
+  position: relative;
+  z-index: 10;
+}
+
+.app-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--primary-light), transparent);
+  border-radius: 1px;
 }
 
 .header-content {
-  max-width: 1400px;
+  max-width: 1200px;
   margin: 0 auto;
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
 .app-header h1 {
-  font-size: 1.25rem;
-  font-weight: 500;
+  font-size: 1.15rem;
+  font-weight: 600;
   margin: 0;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
+  color: var(--primary-dark);
 }
 
 .header-btn {
   background: transparent;
   color: var(--foreground);
-  padding: 0.5rem 1rem;
+  padding: 0.45rem 1rem;
   text-decoration: none;
-  transition: all 0.2s;
-  font-size: 0.85rem;
+  transition: all 0.2s ease;
+  font-size: 0.82rem;
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: 6px;
+  letter-spacing: 0.02em;
 }
 
 .header-btn:hover {
-  background: var(--card-hover);
+  background: var(--primary-soft);
+  border-color: var(--primary-light);
+  color: var(--primary-dark);
 }
 
-/* 看板容器 */
+/* ==================== 看板容器 ==================== */
 .kanban-container {
   flex: 1;
   padding: 1.5rem;
-  max-width: 1400px;
+  max-width: 1200px;
   margin: 0 auto;
   width: 100%;
   box-sizing: border-box;
+  position: relative;
+  z-index: 1;
 }
 
-/* 任務輸入區域 */
+/* ==================== 任務輸入區 ==================== */
 .task-input-area {
   display: flex;
-  gap: 0.75rem;
+  gap: 0.65rem;
   align-items: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.75rem;
   flex-wrap: wrap;
 }
 
@@ -124,35 +201,37 @@ body {
 }
 
 .priority-select {
-  padding: 0.6rem 0.8rem;
+  padding: 0.55rem 0.75rem;
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: 8px;
   background: var(--card-bg);
   color: var(--foreground);
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   cursor: pointer;
+  transition: border-color 0.2s;
 }
 
 .priority-select:focus {
   outline: none;
-  border-color: var(--primary);
+  border-color: var(--primary-light);
 }
 
-/* 看板樣式 */
+/* ==================== 看板 Board ==================== */
 .kanban-board {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
+  gap: 1.25rem;
+  align-items: start;
 }
 
-/* 看板 column - MUJI 簡約風 */
+/* ==================== 欄位 Column ==================== */
 .kanban-column {
   background: transparent;
-  border-radius: 8px;
-  padding: 0.5rem;
+  border-radius: 12px;
+  padding: 0;
   box-shadow: none;
   border: none;
-  min-height: 400px;
+  min-height: 450px;
   display: flex;
   flex-direction: column;
 }
@@ -161,238 +240,309 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.75rem 1rem;
-  border-radius: 4px;
-  margin-bottom: 0.75rem;
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  margin-bottom: 0.85rem;
   font-weight: 500;
-  font-size: 0.85rem;
-  background: transparent;
+  font-size: 0.82rem;
+  letter-spacing: 0.03em;
+  border: 1px solid transparent;
+  transition: all 0.25s ease;
 }
 
+/* Todo 欄位 */
 .column-todo .kanban-column-header {
-  color: #7a7a7a;
+  background: linear-gradient(135deg, var(--todo-gradient-start), var(--todo-gradient-end));
+  color: var(--column-todo-accent);
+  border-color: rgba(196, 168, 130, 0.2);
+}
+.column-todo .kanban-column-header:hover {
+  border-color: rgba(196, 168, 130, 0.4);
+  box-shadow: var(--shadow-xs);
 }
 
+/* Doing 欄位 */
 .column-doing .kanban-column-header {
-  color: #7a7a7a;
+  background: linear-gradient(135deg, var(--doing-gradient-start), var(--doing-gradient-end));
+  color: var(--column-doing-accent);
+  border-color: rgba(196, 158, 130, 0.2);
+}
+.column-doing .kanban-column-header:hover {
+  border-color: rgba(196, 158, 130, 0.4);
+  box-shadow: var(--shadow-xs);
 }
 
+/* Done 欄位 */
 .column-done .kanban-column-header {
-  color: #7a7a7a;
+  background: linear-gradient(135deg, var(--done-gradient-start), var(--done-gradient-end));
+  color: var(--column-done-accent);
+  border-color: rgba(143, 181, 143, 0.2);
+}
+.column-done .kanban-column-header:hover {
+  border-color: rgba(143, 181, 143, 0.4);
+  box-shadow: var(--shadow-xs);
 }
 
 .task-count {
-  background: var(--border);
-  color: var(--text-muted);
-  padding: 0.15rem 0.5rem;
-  border-radius: 2px;
-  font-size: 0.75rem;
-  font-weight: 400;
+  background: rgba(255,255,255,0.7);
+  color: inherit;
+  padding: 0.1rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  border: 1px solid rgba(0,0,0,0.05);
 }
 
 /* 任務列表 */
 .task-list {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.6rem;
   flex: 1;
+  min-height: 100px;
 }
 
-/* 任務卡片 - MUJI 風格 */
+/* ==================== 任務卡片 ==================== */
 .task-card {
   background: var(--card-bg);
-  border-radius: 6px;
-  padding: 0.85rem;
-  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0;
+  border: 1px solid var(--card-border);
   cursor: grab;
-  transition: all 0.25s ease;
-  box-shadow: var(--shadow-soft);
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: var(--shadow-sm);
   position: relative;
+  overflow: hidden;
+  user-select: none;
+}
+
+/* 卡片頂部漸層accent線 */
+.task-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary-light), var(--warning));
+  opacity: 0.5;
+  transition: opacity 0.2s ease;
 }
 
 .task-card:hover {
-  transform: translateY(-2px);
+  transform: translateY(-3px);
   box-shadow: var(--shadow-hover);
-  border-color: #d0cec8;
+  border-color: var(--border-hover);
 }
 
-.task-card:active {
+.task-card:hover::before {
+  opacity: 0.8;
+}
+
+.task-card:active,
+.task-card.dragging {
   cursor: grabbing;
+  transform: scale(1.02) translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--primary-light);
 }
 
-/* 拖拽手柄 */
-.drag-handle {
-  position: absolute;
-  top: 50%;
-  left: 4px;
-  transform: translateY(-50%);
-  opacity: 0;
-  color: var(--text-muted);
-  font-size: 0.75rem;
-  padding: 0.25rem;
-  transition: opacity 0.2s;
-  letter-spacing: 2px;
+/* dnd-kit 拖拽中狀態 */
+.task-card[data-dnd-dragging="true"] {
+  opacity: 0.85;
+  transform: rotate(1.5deg) scale(1.02);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--primary-light);
 }
 
-.task-card:hover .drag-handle {
-  opacity: 0.4;
+/* 拖拽放置目標 */
+.task-card[data-dnd-over="true"] {
+  border-color: var(--primary-light);
+  background: var(--primary-soft);
+}
+
+.task-card-inner {
+  padding: 0.85rem 0.85rem 0.75rem;
 }
 
 .task-title {
-  font-weight: 400;
-  margin-bottom: 0.5rem;
+  font-weight: 450;
+  margin-bottom: 0.6rem;
   color: var(--foreground);
-  padding-left: 0.5rem;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  letter-spacing: 0.01em;
 }
 
 .task-meta {
-  margin-bottom: 0.5rem;
-  padding-left: 0.5rem;
+  margin-bottom: 0.65rem;
 }
 
-/* 優先權徽章 - MUJI 柔和風格 */
+/* 優先權徽章 */
 .priority-badge {
   display: inline-block;
-  padding: 0.2rem 0.5rem;
-  border-radius: 2px;
-  font-size: 0.7rem;
-  font-weight: 400;
-  letter-spacing: 0.02em;
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
   border: 1px solid;
+  text-transform: uppercase;
 }
 
-/* 高優先權 - 柔和紅 */
-.priority-high .priority-badge,
-.priority-badge:has(+ .priority-high) {
-  background: #f5f0f0;
-  color: #a08080;
-  border-color: #d4c4c4;
+.priority-high .priority-badge {
+  background: var(--priority-high-bg);
+  color: var(--priority-high-text);
+  border-color: var(--priority-high-border);
 }
 
-/* 中優先權 - 柔和黃 */
 .priority-medium .priority-badge {
-  background: #f5f3ec;
-  color: #a09070;
-  border-color: #d4cbb8;
+  background: var(--priority-medium-bg);
+  color: var(--priority-medium-text);
+  border-color: var(--priority-medium-border);
 }
 
-/* 低優先權 - 柔和藍灰 */
 .priority-low .priority-badge {
-  background: #f0f2f5;
-  color: #808fa0;
-  border-color: #c4cdd4;
+  background: var(--priority-low-bg);
+  color: var(--priority-low-text);
+  border-color: var(--priority-low-border);
 }
 
-/* 任務操作 */
+/* 任務操作列 */
 .task-actions {
   display: flex;
   gap: 0.4rem;
   align-items: center;
-  padding-left: 0.5rem;
 }
 
 .status-select {
-  padding: 0.25rem 0.4rem;
+  padding: 0.3rem 0.4rem;
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: 6px;
   background: var(--card-bg);
   color: var(--foreground);
   font-size: 0.7rem;
   flex: 1;
   cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.status-select:hover {
+  border-color: var(--primary-light);
+}
+
+.status-select:focus {
+  outline: none;
+  border-color: var(--primary);
 }
 
 .delete-btn {
   background: none;
   border: none;
   cursor: pointer;
-  opacity: 0.3;
+  opacity: 0.25;
   transition: all 0.2s;
-  font-size: 0.85rem;
-  padding: 0.25rem;
+  font-size: 1rem;
+  padding: 0.2rem 0.4rem;
+  color: var(--danger);
+  border-radius: 4px;
 }
 
 .delete-btn:hover {
-  opacity: 0.6;
-  transform: scale(1.05);
+  opacity: 0.8;
+  background: var(--danger-soft);
 }
 
-/* 空狀態 */
+/* ==================== 空狀態 ==================== */
 .empty-state {
   text-align: center;
-  padding: 1.5rem;
+  padding: 2rem 1rem;
   color: var(--text-muted);
-  font-size: 0.85rem;
+  font-size: 0.82rem;
+}
+
+.empty-illustration {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 0.65rem;
 }
 
 .empty-icon {
   font-size: 1.5rem;
   display: block;
   margin-bottom: 0.5rem;
-  opacity: 0.4;
+  opacity: 0.35;
 }
 
-/* 按鈕樣式 - MUJI 簡約風 */
+/* ==================== 按鈕 ==================== */
 .btn-primary {
-  background: var(--foreground);
-  color: white;
-  padding: 0.6rem 1rem;
-  border-radius: 4px;
-  font-weight: 400;
-  transition: all 0.2s;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: #fff;
+  padding: 0.55rem 1.1rem;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
   border: none;
   cursor: pointer;
   white-space: nowrap;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   letter-spacing: 0.03em;
+  box-shadow: 0 2px 8px rgba(107, 82, 68, 0.25);
 }
 
 .btn-primary:hover {
-  background: #4a4a4a;
+  background: linear-gradient(135deg, var(--primary-light), var(--primary));
   transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(107, 82, 68, 0.3);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
 }
 
 .btn-secondary {
-  background: var(--border);
+  background: var(--background-warm);
   color: var(--foreground);
   padding: 0.4rem 0.8rem;
-  border-radius: 4px;
+  border-radius: 8px;
   font-weight: 400;
   transition: all 0.2s;
-  border: none;
+  border: 1px solid var(--border);
   cursor: pointer;
   font-size: 0.8rem;
 }
 
 .btn-secondary:hover {
-  background: #d5d3ce;
+  background: var(--primary-soft);
+  border-color: var(--primary-light);
+  color: var(--primary-dark);
 }
 
 .btn-cancel {
   background: transparent;
   color: var(--text-muted);
-  padding: 0.6rem 1rem;
-  border-radius: 4px;
+  padding: 0.55rem 1rem;
+  border-radius: 8px;
   font-weight: 400;
   transition: all 0.2s;
   border: 1px solid var(--border);
   cursor: pointer;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
 }
 
 .btn-cancel:hover {
-  background: var(--card-hover);
+  background: var(--background-warm);
   color: var(--foreground);
+  border-color: var(--border-hover);
 }
 
-/* 輸入框樣式 */
+/* ==================== 輸入框 ==================== */
 .input-field {
   width: 100%;
-  padding: 0.6rem 0.8rem;
+  padding: 0.6rem 0.85rem;
   border: 1px solid var(--border);
-  border-radius: 4px;
-  font-size: 0.9rem;
+  border-radius: 8px;
+  font-size: 0.88rem;
   transition: all 0.2s;
   background: var(--card-bg);
   color: var(--foreground);
@@ -401,47 +551,53 @@ body {
 
 .input-field:focus {
   outline: none;
-  border-color: #b5b3ad;
-  box-shadow: none;
+  border-color: var(--primary-light);
+  box-shadow: 0 0 0 3px var(--primary-soft);
 }
 
 .input-field::placeholder {
   color: var(--text-muted);
 }
 
-/* Modal 樣式 */
+/* ==================== Modal ==================== */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(247, 245, 240, 0.85);
+  background: rgba(93, 78, 66, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 50;
   padding: 1rem;
-  backdrop-filter: blur(2px);
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .modal-content {
   background: var(--card-bg);
-  border-radius: 8px;
+  border-radius: 14px;
   padding: 1.5rem;
   max-width: 28rem;
   width: 100%;
   max-height: 85vh;
   overflow-y: auto;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
-  animation: modalSlideIn 0.2s ease-out;
+  box-shadow: var(--shadow-lg);
+  animation: modalSlideIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 @keyframes modalSlideIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(16px) scale(0.97);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 
@@ -456,9 +612,10 @@ body {
 
 .modal-header h2 {
   font-size: 1rem;
-  font-weight: 500;
+  font-weight: 600;
   margin: 0;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.02em;
+  color: var(--primary-dark);
 }
 
 .modal-title-row {
@@ -471,40 +628,46 @@ body {
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 0.9rem;
-  padding: 0.2rem;
+  font-size: 0.85rem;
+  padding: 0.2rem 0.5rem;
   opacity: 0.4;
-  transition: opacity 0.2s;
+  transition: all 0.2s;
+  color: var(--primary);
+  border-radius: 4px;
 }
 
 .edit-btn:hover {
-  opacity: 0.7;
+  opacity: 0.8;
+  background: var(--primary-soft);
 }
 
 .close-btn {
   background: none;
   border: none;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   cursor: pointer;
   color: var(--text-muted);
   line-height: 1;
-  padding: 0;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  transition: all 0.2s;
 }
 
 .close-btn:hover {
   color: var(--foreground);
+  background: var(--background-warm);
 }
 
 /* 任務描述 */
 .task-description {
-  background: var(--background);
+  background: var(--background-warm);
   padding: 0.75rem;
-  border-radius: 4px;
+  border-radius: 8px;
   margin-bottom: 1rem;
   font-size: 0.85rem;
   color: var(--text-muted);
   border: 1px solid var(--border);
-  line-height: 1.6;
+  line-height: 1.65;
 }
 
 /* 編輯表單 */
@@ -518,12 +681,13 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
-  font-size: 0.85rem;
-  font-weight: 400;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--foreground);
 }
 
 .form-label .input-field {
-  font-size: 0.9rem;
+  font-size: 0.88rem;
 }
 
 .form-label .textarea {
@@ -533,7 +697,7 @@ body {
 
 .edit-actions {
   display: flex;
-  gap: 0.75rem;
+  gap: 0.65rem;
   justify-content: flex-end;
   margin-top: 0.5rem;
 }
@@ -544,31 +708,47 @@ body {
   flex-direction: column;
   gap: 0.5rem;
   margin-bottom: 1rem;
-  max-height: 300px;
+  max-height: 280px;
   overflow-y: auto;
+}
+
+.subtask-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.subtask-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.subtask-list::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 2px;
 }
 
 .subtask-item {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem;
+  padding: 0.5rem 0.65rem;
   border: 1px solid var(--border);
-  border-radius: 4px;
-  background: var(--background);
+  border-radius: 8px;
+  background: var(--background-warm);
   transition: all 0.2s;
 }
 
 .subtask-item:hover {
-  border-color: #d0cec8;
+  border-color: var(--primary-light);
+  background: var(--primary-soft);
 }
 
 .subtask-item input[type="checkbox"] {
-  width: 1.1rem;
-  height: 1.1rem;
+  width: 1rem;
+  height: 1rem;
   cursor: pointer;
   accent-color: var(--success);
   border-color: var(--border);
+  border-radius: 3px;
+  flex-shrink: 0;
 }
 
 .subtask-item.completed span {
@@ -587,21 +767,25 @@ body {
   font-size: 0.85rem;
 }
 
-/* ==================== RWD 響應式設計 ==================== */
+/* ==================== 響應式設計 ==================== */
 
-/* 平板 (≤1024px) */
+/* 平板豎向 (≤1024px) */
 @media (max-width: 1024px) {
   .kanban-board {
     grid-template-columns: repeat(3, 1fr);
-    gap: 0.75rem;
+    gap: 1rem;
   }
   
   .kanban-column {
-    min-height: 350px;
+    min-height: 380px;
+  }
+  
+  .kanban-container {
+    padding: 1.25rem 1rem;
   }
 }
 
-/* 大手機 (≤768px) */
+/* 平板橫向 / 大手機 (≤768px) */
 @media (max-width: 768px) {
   .header-content {
     flex-direction: column;
@@ -609,16 +793,17 @@ body {
   }
   
   .app-header h1 {
-    font-size: 1.1rem;
+    font-size: 1.05rem;
   }
   
   .kanban-container {
-    padding: 1rem;
+    padding: 1rem 0.75rem;
   }
   
   .task-input-area {
     flex-direction: column;
     align-items: stretch;
+    gap: 0.5rem;
   }
   
   .task-input-area .input-field,
@@ -637,21 +822,20 @@ body {
   }
   
   .kanban-column-header {
-    padding: 0.6rem 0.8rem;
+    padding: 0.7rem 0.9rem;
     font-size: 0.8rem;
   }
   
   .task-card {
-    padding: 0.75rem;
+    border-radius: 8px;
   }
   
   .task-title {
-    font-size: 0.9rem;
+    font-size: 0.88rem;
   }
   
   .priority-badge {
     font-size: 0.65rem;
-    padding: 0.15rem 0.4rem;
   }
   
   .task-actions {
@@ -663,61 +847,10 @@ body {
     min-width: 80px;
   }
   
-  .delete-btn {
-    padding: 0.3rem;
-  }
-}
-
-/* 小手機 (≤480px) */
-@media (max-width: 480px) {
-  .app-header {
-    padding: 1rem;
-  }
-  
-  .app-header h1 {
-    font-size: 1rem;
-  }
-  
-  .header-btn {
-    padding: 0.4rem 0.75rem;
-    font-size: 0.8rem;
-  }
-  
-  .kanban-container {
-    padding: 0.75rem;
-  }
-  
-  .kanban-board {
-    gap: 0.75rem;
-  }
-  
-  .kanban-column {
-    padding: 0.5rem;
-    border-radius: 6px;
-  }
-  
-  .task-card {
-    padding: 0.65rem;
-    border-radius: 5px;
-  }
-  
-  .task-title {
-    font-size: 0.85rem;
-    margin-bottom: 0.4rem;
-  }
-  
-  .task-meta {
-    margin-bottom: 0.4rem;
-  }
-  
   .modal-content {
-    padding: 1rem;
+    padding: 1.25rem;
     margin: 0.5rem;
-    max-height: 90vh;
-  }
-  
-  .modal-header h2 {
-    font-size: 0.95rem;
+    max-height: 88vh;
   }
   
   .edit-actions {
@@ -727,6 +860,62 @@ body {
   .edit-actions .btn-primary,
   .edit-actions .btn-cancel {
     width: 100%;
+  }
+}
+
+/* 小手機 (≤480px) */
+@media (max-width: 480px) {
+  .app-header {
+    padding: 0.85rem 1rem;
+  }
+  
+  .app-header h1 {
+    font-size: 1rem;
+  }
+  
+  .header-btn {
+    padding: 0.35rem 0.7rem;
+    font-size: 0.78rem;
+  }
+  
+  .kanban-container {
+    padding: 0.75rem 0.5rem;
+  }
+  
+  .kanban-board {
+    gap: 0.75rem;
+  }
+  
+  .kanban-column {
+    padding: 0.5rem;
+    border-radius: 10px;
+  }
+  
+  .task-card {
+    padding: 0;
+    border-radius: 8px;
+  }
+  
+  .task-card-inner {
+    padding: 0.7rem 0.75rem 0.65rem;
+  }
+  
+  .task-title {
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .task-meta {
+    margin-bottom: 0.55rem;
+  }
+  
+  .modal-content {
+    padding: 1rem;
+    border-radius: 12px;
+  }
+  
+  .modal-header h2 {
+    font-size: 0.95rem;
   }
   
   .subtask-input-area {
@@ -738,7 +927,7 @@ body {
   }
 }
 
-/* 觸摸設備優化 */
+/* 觸摸設備 */
 @media (hover: none) and (pointer: coarse) {
   .task-card {
     cursor: pointer;
@@ -752,17 +941,37 @@ body {
     transform: scale(0.98);
   }
   
-  .drag-handle {
-    display: none;
-  }
-  
   .delete-btn {
-    opacity: 0.5;
-    padding: 0.4rem;
+    opacity: 0.4;
+    padding: 0.35rem;
   }
   
   .status-select {
     padding: 0.35rem;
     font-size: 0.75rem;
   }
+}
+
+/* 滾動條美化 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-hover);
+}
+
+/* dnd-kit 拖拽覆蓋層動畫 */
+.drag-overlay {
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
 }

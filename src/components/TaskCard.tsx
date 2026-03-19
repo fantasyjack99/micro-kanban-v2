@@ -18,35 +18,34 @@ export function TaskCard({ task, onClick, onStatusChange, onDelete }: TaskCardPr
     setNodeRef,
     transform,
     transition,
-    isDragging
+    isDragging,
   } = useSortable({ id: task.id })
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
+    transition: transition ? `${transition} cubic-bezier(0.34, 1.56, 0.64, 1)` : undefined,
   }
 
-  // MUJI 風格優先權 - 柔和低調
+  // 板栗看板優先權配置
   const priorityConfig = {
-    high: { 
-      label: '緊急', 
-      bg: '#f5f0f0',
-      border: '#d4c4c4',
-      text: '#a08080'
+    high: {
+      label: '緊急',
+      bg: 'var(--priority-high-bg)',
+      border: 'var(--priority-high-border)',
+      text: 'var(--priority-high-text)',
     },
-    medium: { 
-      label: '一般', 
-      bg: '#f5f3ec',
-      border: '#d4cbb8',
-      text: '#a09070'
+    medium: {
+      label: '一般',
+      bg: 'var(--priority-medium-bg)',
+      border: 'var(--priority-medium-border)',
+      text: 'var(--priority-medium-text)',
     },
-    low: { 
-      label: '低', 
-      bg: '#f0f2f5',
-      border: '#c4cdd4',
-      text: '#808fa0'
-    }
+    low: {
+      label: '低',
+      bg: 'var(--priority-low-bg)',
+      border: 'var(--priority-low-border)',
+      text: 'var(--priority-low-text)',
+    },
   }
 
   const priority = priorityConfig[task.priority]
@@ -57,53 +56,52 @@ export function TaskCard({ task, onClick, onStatusChange, onDelete }: TaskCardPr
       style={style}
       {...attributes}
       {...listeners}
-      className={`task-card priority-${task.priority}`}
+      className={`task-card priority-${task.priority}${isDragging ? ' dragging' : ''}`}
       onClick={onClick}
+      aria-label={`任務：${task.title}`}
     >
-      {/* 拖拽手柄視覺提示 */}
-      <div className="drag-handle">
-        <span>::</span>
-      </div>
-      
-      <div className="task-title">{task.title}</div>
-      
-      <div className="task-meta">
-        <span 
-          className="priority-badge"
-          style={{ 
-            background: priority.bg,
-            borderColor: priority.border,
-            color: priority.text
-          }}
-        >
-          {priority.label}
-        </span>
-      </div>
-      
-      <div className="task-actions">
-        <select
-          value={task.status}
-          onChange={(e) => {
-            e.stopPropagation()
-            onStatusChange(e.target.value as Task['status'])
-          }}
-          onClick={(e) => e.stopPropagation()}
-          className="status-select"
-        >
-          <option value="todo">待處理</option>
-          <option value="doing">執行中</option>
-          <option value="done">完成</option>
-        </select>
-        <button
-          onClick={(e) => {
-            e.stopPropagation()
-            onDelete()
-          }}
-          className="delete-btn"
-          title="刪除任務"
-        >
-          ×
-        </button>
+      <div className="task-card-inner">
+        <div className="task-title">{task.title}</div>
+
+        <div className="task-meta">
+          <span
+            className="priority-badge"
+            style={{
+              background: priority.bg,
+              borderColor: priority.border,
+              color: priority.text,
+            }}
+          >
+            {priority.label}
+          </span>
+        </div>
+
+        <div className="task-actions">
+          <select
+            value={task.status}
+            onChange={(e) => {
+              e.stopPropagation()
+              onStatusChange(e.target.value as Task['status'])
+            }}
+            onClick={(e) => e.stopPropagation()}
+            className="status-select"
+          >
+            <option value="todo">待處理</option>
+            <option value="doing">執行中</option>
+            <option value="done">完成</option>
+          </select>
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              onDelete()
+            }}
+            className="delete-btn"
+            title="刪除任務"
+            aria-label="刪除任務"
+          >
+            ×
+          </button>
+        </div>
       </div>
     </div>
   )
